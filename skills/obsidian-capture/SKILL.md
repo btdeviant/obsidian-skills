@@ -30,6 +30,8 @@ obsidian delete <path>              # delete a note
 
 For long notes, write to a temp file first, then `obsidian write <path> -f /tmp/note.md`.
 
+**Bootstrap:** `scripts/bootstrap <project-name> [repo-url]` — scaffolds the full project folder structure on first use. Idempotent.
+
 ## Project Structure
 
 Every project gets its own folder. **The folder name is the lowercase repo name.**
@@ -167,7 +169,7 @@ Lowercase, hyphenated. Layer them:
 
 ## Workflow
 
-1. Notice something capture-worthy
+1. **Bootstrap first** — run `scripts/bootstrap <project-name> [repo-url]` on first use. This scaffolds the entire folder structure. It's idempotent — safe to run if the project already exists.
 2. Search vault for related notes: `obsidian search "<terms>"`
 3. Write note to temp file, then `obsidian write <path> -f /tmp/note.md`
 4. If linking to an existing note, append a backlink to it

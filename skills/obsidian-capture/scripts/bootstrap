@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# Bootstrap a new project in the Obsidian vault.
+# Creates the full folder structure + metadata stub.
+# Idempotent — safe to run on existing projects (won't overwrite).
+#
+# Usage: bootstrap <project-name> [repo-url]
+# Example: bootstrap my-project https://github.com/org/my-project
+
+set -euo pipefail
+
+PROJECT="${1:?Usage: bootstrap <project-name> [repo-url]}"
+REPO_URL="${2:-}"
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+OBSIDIAN="${SCRIPT_DIR}/obsidian"
+
+if [[ ! -x "$OBSIDIAN" ]]; then
+  echo "ERROR: obsidian CLI not found at ${SCRIPT_DIR}/obsidian" >&2
+  exit 1
+fi
+
+# Check if project already exists
+existing=$("$OBSIDIAN" search "$PROJECT" 2>/dev/null | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+matches = [r for r in data if r.get('filename', '').startswith('${PROJECT}/')]
+print(len(matches))
+" 2>/dev/null || echo "0")
+
+if [[ "$existing" -gt 0 ]]; then
+  echo "Project '${PROJECT}' already exists in vault (${existing} notes found). Skipping bootstrap."
+  exit 0
+fi
+
+echo "Bootstrapping project: ${PROJECT}"
+
+# Scaffold every folder by writing a .gitkeep-style placeholder.
+# Obsidian creates folders implicitly when notes are written.
+# We use empty placeholder notes that serve as folder anchors.
+# These are named with underscore prefix so they sort first.
+
+folders=(
+  "Architecture/Decisions"
+  "Backlog/Issues/Open"
+  "Backlog/Issues/Closed"
+  "Insights"
+  "RFCs/01 - Ideas"
+  "RFCs/02 - Designs"
+  "RFCs/03 - Active"
+  "RFCs/04 - Complete"
+  "RFCs/05 - Superseded"
+  "RFCs/06 - Deprecated"
+  "Sessions"
+)
+
+for folder in "${folders[@]}"; do
+  "$OBSIDIAN" write "${PROJECT}/${folder}/.gitkeep.md" "placeholder" >/dev/null 2>&1
+done
+
+# Write metadata
+metadata="---
+project: ${PROJECT}"
+if [[ -n "$REPO_URL" ]]; then
+  metadata="${metadata}
+repo: ${REPO_URL}"
+fi
+metadata="${metadata}
+---
+
+# ${PROJECT}
+"
+"$OBSIDIAN" write "${PROJECT}/${PROJECT}_metadata.md" "$metadata" >/dev/null 2>&1
+
+# Write architecture overview stub
+overview="---
+tags:
+  - architecture
+  - ${PROJECT}
+project: ${PROJECT}
+---
+
+# ${PROJECT} — Architecture Overview
+"
+"$OBSIDIAN" write "${PROJECT}/Architecture/${PROJECT}_overview.md" "$overview" >/dev/null 2>&1
+
+# Write backlog stub
+backlog="---
+tags:
+  - backlog
+  - ${PROJECT}
+project: ${PROJECT}
+---
+
+# ${PROJECT} — Backlog
+"
+"$OBSIDIAN" write "${PROJECT}/Backlog/${PROJECT}_backlog.md" "$backlog" >/dev/null 2>&1
+
+echo "Done. Created project structure for '${PROJECT}' with $(( ${#folders[@]} + 3 )) notes."
