@@ -9,7 +9,7 @@
     {
       "name": "obsidian-skills",
       "description": "Obsidian vault skills for Claude Code — capture decisions, insights, and issues during sessions, audit vault against codebase",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "source": "./",
       "author": {
         "name": "btdeviant",

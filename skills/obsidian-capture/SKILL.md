@@ -7,7 +7,7 @@ description: Use proactively during any conversation to capture decisions, insig
 
 Proactively capture notes to an Obsidian vault during sessions. If something is worth remembering in 3 months, capture it.
 
-Depends on the `obsidian` skill for CLI, bootstrap, and project structure.
+Depends on `obsidian-read` for CLI, bootstrap, and project structure.
 
 ## When to Capture
 
@@ -111,7 +111,7 @@ Lowercase, hyphenated. Layer them:
 
 ## Workflow
 
-1. **Bootstrap first** — run the `obsidian` skill's `scripts/bootstrap <project-name> [repo-url]` on first use. Idempotent.
+1. **Bootstrap first** — run `obsidian-read` skill's `scripts/bootstrap <project-name> [repo-url]` on first use. Idempotent.
 2. Search vault for related notes: `obsidian search "<terms>"`
 3. Use the **Write tool** to create `/tmp/<descriptive-name>.md` with the note content
 4. Run `obsidian write <vault-path> -f /tmp/<descriptive-name>.md` via Bash (one-liner, no heredocs)

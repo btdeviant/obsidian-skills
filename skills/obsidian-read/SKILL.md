@@ -1,11 +1,11 @@
 ---
-name: obsidian
-description: Core Obsidian vault primitives — read, write, search, list, bootstrap. Use when any vault interaction is needed. Other obsidian skills (capture, audit) depend on this.
+name: obsidian-read
+description: Read, search, and list notes in an Obsidian vault. Use this skill to look up anything in the vault — notes, tags, project structure. Load this BEFORE obsidian-capture or obsidian-audit.
 ---
 
-# Obsidian
+# Obsidian Read
 
-Core primitives for interacting with an Obsidian vault via the Local REST API.
+Read, search, and list notes in an Obsidian vault via the Local REST API.
 
 ## Prerequisites
 
@@ -19,12 +19,17 @@ All vault operations go through the bundled CLI at `scripts/obsidian`:
 
 ```
 obsidian read   <path>              # read a note (returns non-zero on 404)
-obsidian write  <path> <content>    # create/overwrite a note
-obsidian write  <path> -f <file>    # create/overwrite from file
-obsidian append <path> <content>    # append to a note
 obsidian search <query>             # fuzzy full-text search
 obsidian list   [path]              # list vault files
 obsidian tags                       # list all tags
+```
+
+Write operations (used by obsidian-capture):
+
+```
+obsidian write  <path> <content>    # create/overwrite a note
+obsidian write  <path> -f <file>    # create/overwrite from file
+obsidian append <path> <content>    # append to a note
 obsidian delete <path>              # delete a note
 ```
 

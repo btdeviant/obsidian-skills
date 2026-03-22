@@ -15,10 +15,9 @@ if [[ -n "${OBSIDIAN_CLI:-}" ]]; then
   OBSIDIAN="$OBSIDIAN_CLI"
 else
   for candidate in \
-    "${SCRIPT_DIR}/../../obsidian/scripts/obsidian" \
-    "${SCRIPT_DIR}/../../../obsidian/scripts/obsidian" \
-    "${SCRIPT_DIR}/../../obsidian-capture/scripts/obsidian" \
-    "$(find "$(dirname "${SCRIPT_DIR}")" -path "*/obsidian/scripts/obsidian" -type f 2>/dev/null | head -1)"; do
+    "${SCRIPT_DIR}/../../obsidian-read/scripts/obsidian" \
+    "${SCRIPT_DIR}/../../../obsidian-read/scripts/obsidian" \
+    "$(find "$(dirname "${SCRIPT_DIR}")" -path "*/obsidian-read/scripts/obsidian" -type f 2>/dev/null | head -1)"; do
     if [[ -n "$candidate" && -x "$candidate" ]]; then
       OBSIDIAN="$candidate"
       break
@@ -28,7 +27,7 @@ fi
 
 if [[ -z "$OBSIDIAN" ]]; then
   echo "ERROR: Cannot find obsidian CLI." >&2
-  echo "Set OBSIDIAN_CLI or install the obsidian skill alongside this one." >&2
+  echo "Set OBSIDIAN_CLI or install the obsidian-read skill alongside this one." >&2
   exit 1
 fi
 

@@ -7,7 +7,7 @@ description: Use after a PR merges to main, or when the user asks to sync the Ob
 
 Cross-reference the Obsidian vault against the current codebase to find stale notes, resolved issues, and missing coverage.
 
-Depends on the `obsidian` skill for CLI and project structure.
+Depends on `obsidian-read` for CLI and project structure.
 
 ## Scripts
 
