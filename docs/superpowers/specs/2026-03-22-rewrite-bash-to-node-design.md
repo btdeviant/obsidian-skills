@@ -79,7 +79,15 @@ class ObsidianClient {
 
 Implementation details:
 
-- URL encoding via built-in `encodeURIComponent`. No python3.
+- **URL encoding**: split path on `/`, encode each segment with `encodeURIComponent`, rejoin with `/`. Raw `encodeURIComponent` encodes `/` to `%2F` which breaks the API's path routing.
+- **HTTP headers per method**:
+  - `read()`: `Accept: text/markdown`
+  - `search()`, `list()`, `tags()`: `Accept: application/json`
+  - `write()`, `writeFile()`: `Content-Type: text/markdown`
+  - `append()`: `Content-Type: text/markdown` + `Operation: append`
+  - All: `Authorization: Bearer ${apiKey}`
+- **Search query**: `POST /search/simple/?query=${encodedQuery}` — query goes in URL parameter, not body.
+- **`list()` trailing slash**: `GET /vault/${encodedPath}/` — the trailing `/` distinguishes directory listing from file read.
 - HTTP errors throw with status code and response body. No silent swallowing.
 - `exists()` wraps `read()` in try/catch — returns boolean, no subprocess.
 - Content passed to `fetch` via request body, not command-line arguments (prevents `@`-prefix injection that curl has).
@@ -112,6 +120,10 @@ Thin wrapper. Parses `process.argv`, calls `createClient()`, dispatches to the r
 - `write`, `append`, `delete` → silent on success, JSON error to stderr on failure
 - All errors → JSON to stderr, non-zero exit code
 
+CLI write modes:
+- `cli.mjs write <path> <content>` — inline content
+- `cli.mjs write <path> -f <file>` — read from file (used by obsidian-capture workflow)
+
 Agents invoke via: `node cli.mjs read "path/to/note.md"`
 
 ## Bootstrap: `skills/obsidian-read/scripts/bootstrap.mjs`
@@ -125,6 +137,7 @@ Same logic as current bash version. Improvements:
 - Imports `ObsidianClient` directly — one client instance, no subprocess per check.
 - `client.exists()` for idempotency checks — single HTTP call, no exit code parsing.
 - Template literals for YAML stubs instead of bash variable concatenation.
+- Accepts optional `repo-url` argument: `bootstrap.mjs <project> [repo-url]`. URL written into metadata frontmatter.
 - JSON output: `{ "project": "my-project", "created": 14, "skipped": 0 }`.
 
 Folder list:
@@ -155,8 +168,9 @@ Rewrite:
 1. `createClient()`
 2. `client.search(project)` → array of filenames
 3. Loop with `client.read()` for each → collect into structured output
-4. Write claims file to `/tmp/vault-claims.txt` (TYPE|NAME|SOURCE_NOTE format)
-5. Output JSON: `{ notes: [{ path, content, tags, date }], claimsFile: "/tmp/vault-claims.txt" }`
+4. Output JSON: `{ notes: [{ path, content }] }`
+
+The vault reader outputs raw note content. Claim extraction (identifying file paths, function names, components from freeform markdown) is done by the **agent**, not the script — this requires LLM comprehension. The agent writes `/tmp/vault-claims.txt` after parsing the vault reader's JSON output.
 
 One process, one HTTP client, native JSON parsing.
 
