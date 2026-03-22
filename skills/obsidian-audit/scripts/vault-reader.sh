@@ -7,12 +7,25 @@ set -euo pipefail
 
 PROJECT="${1:?Usage: vault-reader.sh <project-name>}"
 
-# Locate the obsidian CLI
+# Locate the obsidian CLI — search multiple layouts (repo, plugin cache, etc.)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+OBSIDIAN=""
+
 if [[ -n "${OBSIDIAN_CLI:-}" ]]; then
   OBSIDIAN="$OBSIDIAN_CLI"
-elif [[ -x "$(dirname "$0")/../../obsidian-capture/scripts/obsidian" ]]; then
-  OBSIDIAN="$(dirname "$0")/../../obsidian-capture/scripts/obsidian"
 else
+  for candidate in \
+    "${SCRIPT_DIR}/../../obsidian-capture/scripts/obsidian" \
+    "${SCRIPT_DIR}/../../../obsidian-capture/scripts/obsidian" \
+    "$(find "$(dirname "${SCRIPT_DIR}")" -path "*/obsidian-capture/scripts/obsidian" -type f 2>/dev/null | head -1)"; do
+    if [[ -n "$candidate" && -x "$candidate" ]]; then
+      OBSIDIAN="$candidate"
+      break
+    fi
+  done
+fi
+
+if [[ -z "$OBSIDIAN" ]]; then
   echo "ERROR: Cannot find obsidian CLI." >&2
   echo "Set OBSIDIAN_CLI or install the obsidian-capture skill alongside this one." >&2
   exit 1

@@ -21,7 +21,9 @@ All gathering is done via scripts (one shell invocation per phase, not dozens):
 - `scripts/git-analyst.sh [days-back] [repo-path]` — recent commits, branches, additions, removals
 - `scripts/codebase-scanner.sh <claims-file> [repo-path]` — verifies claims extracted from vault notes
 
-Scripts locate the obsidian CLI via `OBSIDIAN_CLI` env var, or by searching sibling skill directories.
+Scripts auto-locate the obsidian CLI by searching sibling directories. No env vars needed.
+
+**IMPORTANT: Every script invocation must be a single-line Bash command.** Do not set env vars on separate lines or construct multi-line commands — this triggers security prompts. One line per call.
 
 ## Process
 
