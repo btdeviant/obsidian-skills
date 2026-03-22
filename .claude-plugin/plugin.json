@@ -1,9 +1,9 @@
 {
   "name": "obsidian-skills",
   "description": "Obsidian vault skills for Claude Code — capture decisions, insights, and issues during sessions, audit vault against codebase",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
-    "name": "Brandon Deviant",
+    "name": "btdeviant",
     "url": "https://github.com/btdeviant"
   },
   "homepage": "https://github.com/btdeviant/obsidian-skills",
