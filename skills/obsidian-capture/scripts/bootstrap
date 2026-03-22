@@ -19,8 +19,14 @@ if [[ ! -x "$OBSIDIAN" ]]; then
   exit 1
 fi
 
+# Check if a note exists — returns 0 if found, 1 if not.
+# The obsidian CLI returns JSON error bodies on 404, so we check exit code, not output.
+note_exists() {
+  "$OBSIDIAN" read "$1" >/dev/null 2>&1
+}
+
 # Check if project has been bootstrapped (metadata file = bootstrap marker)
-metadata_check=$("$OBSIDIAN" read "${PROJECT}/${PROJECT}_metadata.md" 2>/dev/null || echo "")
+note_exists "${PROJECT}/${PROJECT}_metadata.md" && metadata_exists=true || metadata_exists=false
 
 echo "Bootstrapping project: ${PROJECT}"
 
@@ -44,15 +50,14 @@ folders=(
 
 created=0
 for folder in "${folders[@]}"; do
-  existing=$("$OBSIDIAN" read "${PROJECT}/${folder}/.gitkeep.md" 2>/dev/null || echo "")
-  if [[ -z "$existing" ]]; then
+  if ! note_exists "${PROJECT}/${folder}/.gitkeep.md"; then
     "$OBSIDIAN" write "${PROJECT}/${folder}/.gitkeep.md" "placeholder" >/dev/null 2>&1
     created=$((created + 1))
   fi
 done
 
 # Write metadata (only if missing)
-if [[ -z "$metadata_check" ]]; then
+if [[ "$metadata_exists" == false ]]; then
   metadata="---
 project: ${PROJECT}"
   if [[ -n "$REPO_URL" ]]; then
@@ -69,8 +74,7 @@ repo: ${REPO_URL}"
 fi
 
 # Write architecture overview stub (only if missing)
-overview_check=$("$OBSIDIAN" read "${PROJECT}/Architecture/${PROJECT}_overview.md" 2>/dev/null || echo "")
-if [[ -z "$overview_check" ]]; then
+if ! note_exists "${PROJECT}/Architecture/${PROJECT}_overview.md"; then
   overview="---
 tags:
   - architecture
@@ -85,8 +89,7 @@ project: ${PROJECT}
 fi
 
 # Write backlog stub (only if missing)
-backlog_check=$("$OBSIDIAN" read "${PROJECT}/Backlog/${PROJECT}_backlog.md" 2>/dev/null || echo "")
-if [[ -z "$backlog_check" ]]; then
+if ! note_exists "${PROJECT}/Backlog/${PROJECT}_backlog.md"; then
   backlog="---
 tags:
   - backlog

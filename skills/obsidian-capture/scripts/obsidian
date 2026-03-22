@@ -24,7 +24,7 @@ cmd_read() {
   local path="${1:?Usage: obsidian read <path>}"
   local encoded
   encoded=$(urlencode_path "$path")
-  curl -s "${BASE_URL}/vault/${encoded}" \
+  curl -sf "${BASE_URL}/vault/${encoded}" \
     -H "$AUTH_HEADER" \
     -H "Accept: text/markdown"
 }

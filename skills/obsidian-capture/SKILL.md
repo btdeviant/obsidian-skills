@@ -28,7 +28,7 @@ obsidian tags                       # list all tags
 obsidian delete <path>              # delete a note
 ```
 
-For long notes, write to a temp file first, then `obsidian write <path> -f /tmp/note.md`.
+**IMPORTANT: Never use heredocs or inline content in Bash for note writing.** Always use the Write tool to create `/tmp/<note>.md`, then a one-line Bash call: `obsidian write <path> -f /tmp/<note>.md`. This avoids security prompts from markdown headers in shell commands.
 
 **Bootstrap:** `scripts/bootstrap <project-name> [repo-url]` — scaffolds the full project folder structure on first use. Idempotent.
 
@@ -169,11 +169,12 @@ Lowercase, hyphenated. Layer them:
 
 ## Workflow
 
-1. **Bootstrap first** — run `scripts/bootstrap <project-name> [repo-url]` on first use. This scaffolds the entire folder structure. It's idempotent — safe to run if the project already exists.
+1. **Bootstrap first** — run `scripts/bootstrap <project-name> [repo-url]` on first use. Idempotent.
 2. Search vault for related notes: `obsidian search "<terms>"`
-3. Write note to temp file, then `obsidian write <path> -f /tmp/note.md`
-4. If linking to an existing note, append a backlink to it
-5. Mention what you captured (one line, not a production)
+3. Use the **Write tool** to create `/tmp/<descriptive-name>.md` with the note content
+4. Run `obsidian write <vault-path> -f /tmp/<descriptive-name>.md` via Bash (one-liner, no heredocs)
+5. If linking to an existing note, append a backlink to it
+6. Mention what you captured (one line, not a production)
 
 ## If OBSIDIAN_API_KEY Is Not Set
 
