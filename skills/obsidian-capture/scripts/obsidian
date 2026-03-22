@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# Obsidian vault CLI — wraps the Local REST API plugin
+# Requires: OBSIDIAN_API_KEY environment variable
+# Optional: OBSIDIAN_BASE_URL (default: http://127.0.0.1:27123)
+
+set -euo pipefail
+
+BASE_URL="${OBSIDIAN_BASE_URL:-http://127.0.0.1:27123}"
+
+if [[ -z "${OBSIDIAN_API_KEY:-}" ]]; then
+  echo "ERROR: OBSIDIAN_API_KEY is not set." >&2
+  echo "Set it in your environment or .env file." >&2
+  echo "Find your API key in Obsidian: Settings > Local REST API > API Key" >&2
+  exit 1
+fi
+
+AUTH_HEADER="Authorization: Bearer ${OBSIDIAN_API_KEY}"
+
+urlencode_path() {
+  python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe='/'))" "$1"
+}
+
+cmd_read() {
+  local path="${1:?Usage: obsidian read <path>}"
+  local encoded
+  encoded=$(urlencode_path "$path")
+  curl -s "${BASE_URL}/vault/${encoded}" \
+    -H "$AUTH_HEADER" \
+    -H "Accept: text/markdown"
+}
+
+cmd_write() {
+  local path="${1:?Usage: obsidian write <path> <content | -f file>}"
+  shift
+  local encoded
+  encoded=$(urlencode_path "$path")
+
+  local content
+  if [[ "${1:-}" == "-f" ]]; then
+    content=$(cat "${2:?Usage: obsidian write <path> -f <file>}")
+  else
+    content="$*"
+  fi
+
+  curl -s -X PUT "${BASE_URL}/vault/${encoded}" \
+    -H "$AUTH_HEADER" \
+    -H "Content-Type: text/markdown" \
+    --data-binary "$content"
+}
+
+cmd_append() {
+  local path="${1:?Usage: obsidian append <path> <content>}"
+  shift
+  local encoded
+  encoded=$(urlencode_path "$path")
+
+  curl -s -X PATCH "${BASE_URL}/vault/${encoded}" \
+    -H "$AUTH_HEADER" \
+    -H "Content-Type: text/markdown" \
+    -H "Operation: append" \
+    --data-binary "$*"
+}
+
+cmd_search() {
+  local query="${1:?Usage: obsidian search <query>}"
+  local encoded_query
+  encoded_query=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$query")
+  curl -s -X POST "${BASE_URL}/search/simple/?query=${encoded_query}" \
+    -H "$AUTH_HEADER" \
+    -H "Accept: application/json"
+}
+
+cmd_list() {
+  local path="${1:-}"
+  local encoded=""
+  if [[ -n "$path" ]]; then
+    encoded=$(urlencode_path "$path")
+  fi
+  curl -s "${BASE_URL}/vault/${encoded}" \
+    -H "$AUTH_HEADER" \
+    -H "Accept: application/json"
+}
+
+cmd_tags() {
+  curl -s "${BASE_URL}/tags/" \
+    -H "$AUTH_HEADER" \
+    -H "Accept: application/json"
+}
+
+cmd_delete() {
+  local path="${1:?Usage: obsidian delete <path>}"
+  local encoded
+  encoded=$(urlencode_path "$path")
+  curl -s -X DELETE "${BASE_URL}/vault/${encoded}" \
+    -H "$AUTH_HEADER"
+}
+
+cmd_help() {
+  cat <<'HELP'
+obsidian — Obsidian vault CLI (wraps Local REST API)
+
+Commands:
+  read   <path>                    Read a note (markdown)
+  write  <path> <content>          Create/overwrite a note
+  write  <path> -f <file>          Create/overwrite from file
+  append <path> <content>          Append to a note
+  search <query>                   Fuzzy full-text search
+  list   [path]                    List vault files (optionally under path)
+  tags                             List all tags
+  delete <path>                    Delete a note
+  help                             Show this help
+
+Environment:
+  OBSIDIAN_API_KEY       Required. Find in Obsidian: Settings > Local REST API
+  OBSIDIAN_BASE_URL      Optional. Default: http://127.0.0.1:27123
+HELP
+}
+
+case "${1:-help}" in
+  read)   shift; cmd_read "$@" ;;
+  write)  shift; cmd_write "$@" ;;
+  append) shift; cmd_append "$@" ;;
+  search) shift; cmd_search "$@" ;;
+  list)   shift; cmd_list "$@" ;;
+  tags)   shift; cmd_tags "$@" ;;
+  delete) shift; cmd_delete "$@" ;;
+  help)   cmd_help ;;
+  *)      echo "Unknown command: $1" >&2; cmd_help; exit 1 ;;
+esac
