@@ -19,25 +19,14 @@ if [[ ! -x "$OBSIDIAN" ]]; then
   exit 1
 fi
 
-# Check if project already exists
-existing=$("$OBSIDIAN" search "$PROJECT" 2>/dev/null | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-matches = [r for r in data if r.get('filename', '').startswith('${PROJECT}/')]
-print(len(matches))
-" 2>/dev/null || echo "0")
-
-if [[ "$existing" -gt 0 ]]; then
-  echo "Project '${PROJECT}' already exists in vault (${existing} notes found). Skipping bootstrap."
-  exit 0
-fi
+# Check if project has been bootstrapped (metadata file = bootstrap marker)
+metadata_check=$("$OBSIDIAN" read "${PROJECT}/${PROJECT}_metadata.md" 2>/dev/null || echo "")
 
 echo "Bootstrapping project: ${PROJECT}"
 
 # Scaffold every folder by writing a .gitkeep-style placeholder.
 # Obsidian creates folders implicitly when notes are written.
-# We use empty placeholder notes that serve as folder anchors.
-# These are named with underscore prefix so they sort first.
+# Skips folders that already have content.
 
 folders=(
   "Architecture/Decisions"
@@ -53,26 +42,36 @@ folders=(
   "Sessions"
 )
 
+created=0
 for folder in "${folders[@]}"; do
-  "$OBSIDIAN" write "${PROJECT}/${folder}/.gitkeep.md" "placeholder" >/dev/null 2>&1
+  existing=$("$OBSIDIAN" read "${PROJECT}/${folder}/.gitkeep.md" 2>/dev/null || echo "")
+  if [[ -z "$existing" ]]; then
+    "$OBSIDIAN" write "${PROJECT}/${folder}/.gitkeep.md" "placeholder" >/dev/null 2>&1
+    created=$((created + 1))
+  fi
 done
 
-# Write metadata
-metadata="---
+# Write metadata (only if missing)
+if [[ -z "$metadata_check" ]]; then
+  metadata="---
 project: ${PROJECT}"
-if [[ -n "$REPO_URL" ]]; then
-  metadata="${metadata}
+  if [[ -n "$REPO_URL" ]]; then
+    metadata="${metadata}
 repo: ${REPO_URL}"
-fi
-metadata="${metadata}
+  fi
+  metadata="${metadata}
 ---
 
 # ${PROJECT}
 "
-"$OBSIDIAN" write "${PROJECT}/${PROJECT}_metadata.md" "$metadata" >/dev/null 2>&1
+  "$OBSIDIAN" write "${PROJECT}/${PROJECT}_metadata.md" "$metadata" >/dev/null 2>&1
+  created=$((created + 1))
+fi
 
-# Write architecture overview stub
-overview="---
+# Write architecture overview stub (only if missing)
+overview_check=$("$OBSIDIAN" read "${PROJECT}/Architecture/${PROJECT}_overview.md" 2>/dev/null || echo "")
+if [[ -z "$overview_check" ]]; then
+  overview="---
 tags:
   - architecture
   - ${PROJECT}
@@ -81,10 +80,14 @@ project: ${PROJECT}
 
 # ${PROJECT} — Architecture Overview
 "
-"$OBSIDIAN" write "${PROJECT}/Architecture/${PROJECT}_overview.md" "$overview" >/dev/null 2>&1
+  "$OBSIDIAN" write "${PROJECT}/Architecture/${PROJECT}_overview.md" "$overview" >/dev/null 2>&1
+  created=$((created + 1))
+fi
 
-# Write backlog stub
-backlog="---
+# Write backlog stub (only if missing)
+backlog_check=$("$OBSIDIAN" read "${PROJECT}/Backlog/${PROJECT}_backlog.md" 2>/dev/null || echo "")
+if [[ -z "$backlog_check" ]]; then
+  backlog="---
 tags:
   - backlog
   - ${PROJECT}
@@ -93,6 +96,12 @@ project: ${PROJECT}
 
 # ${PROJECT} — Backlog
 "
-"$OBSIDIAN" write "${PROJECT}/Backlog/${PROJECT}_backlog.md" "$backlog" >/dev/null 2>&1
+  "$OBSIDIAN" write "${PROJECT}/Backlog/${PROJECT}_backlog.md" "$backlog" >/dev/null 2>&1
+  created=$((created + 1))
+fi
 
-echo "Done. Created project structure for '${PROJECT}' with $(( ${#folders[@]} + 3 )) notes."
+if [[ "$created" -eq 0 ]]; then
+  echo "Project '${PROJECT}' is up to date. Nothing to create."
+else
+  echo "Done. Created ${created} notes/folders for '${PROJECT}'."
+fi
