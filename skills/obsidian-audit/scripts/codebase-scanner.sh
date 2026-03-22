@@ -46,10 +46,8 @@ while IFS='|' read -r type name source; do
       ;;
     function|func)
       # shellcheck disable=SC2086
-      match=$(grep -rn "$name" $EXCLUDE --include="*.py" --include="*.ts" --include="*.go" --include="*.js" -l 2>/dev/null | head -3)
-      if [[ -n "$match" ]]; then
-        # shellcheck disable=SC2086
-        loc=$(grep -rn "$name" $EXCLUDE --include="*.py" --include="*.ts" --include="*.go" --include="*.js" 2>/dev/null | head -1)
+      loc=$(grep -rn "$name" $EXCLUDE --include="*.py" --include="*.ts" --include="*.go" --include="*.js" 2>/dev/null | head -1)
+      if [[ -n "$loc" ]]; then
         echo "EXISTS | func | $name | $loc"
       else
         echo "GONE   | func | $name | ($source)"
@@ -57,10 +55,8 @@ while IFS='|' read -r type name source; do
       ;;
     config|conf)
       # shellcheck disable=SC2086
-      match=$(grep -rn "$name" $EXCLUDE --include="*.py" --include="*.env.example" --include="*.toml" --include="*.yaml" --include="*.yml" -l 2>/dev/null | head -3)
-      if [[ -n "$match" ]]; then
-        # shellcheck disable=SC2086
-        loc=$(grep -rn "$name" $EXCLUDE --include="*.py" --include="*.toml" 2>/dev/null | head -1)
+      loc=$(grep -rn "$name" $EXCLUDE --include="*.py" --include="*.env.example" --include="*.toml" --include="*.yaml" --include="*.yml" 2>/dev/null | head -1)
+      if [[ -n "$loc" ]]; then
         echo "EXISTS | conf | $name | $loc"
       else
         echo "GONE   | conf | $name | ($source)"

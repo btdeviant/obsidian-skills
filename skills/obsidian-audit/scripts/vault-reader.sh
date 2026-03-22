@@ -13,16 +13,12 @@ OBSIDIAN=""
 
 if [[ -n "${OBSIDIAN_CLI:-}" ]]; then
   OBSIDIAN="$OBSIDIAN_CLI"
+elif [[ -x "${SCRIPT_DIR}/../../obsidian-read/scripts/obsidian" ]]; then
+  OBSIDIAN="${SCRIPT_DIR}/../../obsidian-read/scripts/obsidian"
+elif [[ -x "${SCRIPT_DIR}/../../../obsidian-read/scripts/obsidian" ]]; then
+  OBSIDIAN="${SCRIPT_DIR}/../../../obsidian-read/scripts/obsidian"
 else
-  for candidate in \
-    "${SCRIPT_DIR}/../../obsidian-read/scripts/obsidian" \
-    "${SCRIPT_DIR}/../../../obsidian-read/scripts/obsidian" \
-    "$(find "$(dirname "${SCRIPT_DIR}")" -path "*/obsidian-read/scripts/obsidian" -type f 2>/dev/null | head -1)"; do
-    if [[ -n "$candidate" && -x "$candidate" ]]; then
-      OBSIDIAN="$candidate"
-      break
-    fi
-  done
+  OBSIDIAN="$(find "$(dirname "${SCRIPT_DIR}")" -path "*/obsidian-read/scripts/obsidian" -type f 2>/dev/null | head -1)"
 fi
 
 if [[ -z "$OBSIDIAN" ]]; then

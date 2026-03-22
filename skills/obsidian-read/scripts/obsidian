@@ -42,10 +42,10 @@ cmd_write() {
     content="$*"
   fi
 
-  curl -s -X PUT "${BASE_URL}/vault/${encoded}" \
+  printf '%s' "$content" | curl -s -X PUT "${BASE_URL}/vault/${encoded}" \
     -H "$AUTH_HEADER" \
     -H "Content-Type: text/markdown" \
-    --data-binary "$content"
+    --data-binary @-
 }
 
 cmd_append() {
@@ -54,11 +54,11 @@ cmd_append() {
   local encoded
   encoded=$(urlencode_path "$path")
 
-  curl -s -X PATCH "${BASE_URL}/vault/${encoded}" \
+  printf '%s' "$*" | curl -s -X PATCH "${BASE_URL}/vault/${encoded}" \
     -H "$AUTH_HEADER" \
     -H "Content-Type: text/markdown" \
     -H "Operation: append" \
-    --data-binary "$*"
+    --data-binary @-
 }
 
 cmd_search() {
