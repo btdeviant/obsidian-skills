@@ -7,11 +7,7 @@ description: Use after a PR merges to main, or when the user asks to sync the Ob
 
 Cross-reference the Obsidian vault against the current codebase to find stale notes, resolved issues, and missing coverage.
 
-## Prerequisites
-
-Requires the [Obsidian Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) plugin (v3+) and `OBSIDIAN_API_KEY` set in environment.
-
-The obsidian CLI is bundled with the `obsidian-capture` skill at `obsidian-capture/scripts/obsidian`. If the capture skill is not installed, set `OBSIDIAN_CLI` to the path of an equivalent CLI.
+Depends on the `obsidian` skill for CLI and project structure.
 
 ## Scripts
 
