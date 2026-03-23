@@ -3,7 +3,6 @@
 // Thin CLI wrapper around ObsidianClient.
 // Usage: cli.mjs <command> [args...]
 
-import { readFile } from 'node:fs/promises';
 import { createClient } from '../../../lib/obsidian.mjs';
 
 const client = createClient();
@@ -21,8 +20,7 @@ async function main() {
       const [path, ...rest] = args;
       if (!path) { console.error(JSON.stringify({ error: 'Usage: cli.mjs write <path> <content | -f file>' })); process.exit(1); }
       if (rest[0] === '-f') {
-        const content = await readFile(rest[1], 'utf-8');
-        await client.write(path, content);
+        await client.writeFile(path, rest[1]);
       } else {
         await client.write(path, rest.join(' '));
       }
