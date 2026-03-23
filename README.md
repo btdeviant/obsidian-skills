@@ -2,16 +2,18 @@
 
 Claude Code plugin for local project management with [Obsidian](https://obsidian.md).
 
-Two skills that work in tandem:
+Three skills:
 
+- **obsidian-read** — read, search, list notes. CLI and bootstrap. The foundation the other two depend on.
 - **obsidian-capture** — proactively captures decisions, insights, issues, and ideas to your vault during coding sessions
 - **obsidian-audit** — cross-references your vault against the codebase to find stale notes, resolved issues, and missing coverage
 
 ## Dependencies
 
 - [Obsidian](https://obsidian.md)
-- [Obsidian Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) (v3+) — exposes your vault over a local HTTP API. Install from Obsidian's Community Plugins, then enable it in Settings > Local REST API. This is what the skills use to read and write notes.
+- [Obsidian Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) (v3+) — exposes your vault over a local HTTP API. Install from Obsidian's Community Plugins, then enable it in Settings > Local REST API.
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+- Node.js 18+ (required by Claude Code, no additional install needed)
 
 ## Setup
 
@@ -22,18 +24,12 @@ Two skills that work in tandem:
 ## Installation
 
 ```bash
-claude plugin add /path/to/obsidian-skills
-```
-
-Or from GitHub:
-
-```bash
 claude plugin add btdeviant/obsidian-skills
 ```
 
 ## Vault Structure
 
-Notes are organized by project. Each project folder matches the lowercase repo name.
+Notes are organized by project. Each project folder matches the lowercase repo name. Run `node scripts/bootstrap.mjs <project> [repo-url]` to scaffold a new project.
 
 ```
 vault/
