@@ -15,29 +15,29 @@ Set `OBSIDIAN_API_KEY` in your environment. Find it in Obsidian: Settings > Loca
 
 ## CLI
 
-All vault operations go through the bundled CLI at `scripts/obsidian`:
+All vault operations go through the bundled CLI at `scripts/cli.mjs`:
 
 ```
-obsidian read   <path>              # read a note (returns non-zero on 404)
-obsidian search <query>             # fuzzy full-text search
-obsidian list   [path]              # list vault files
-obsidian tags                       # list all tags
+node scripts/cli.mjs read   <path>              # read a note (returns non-zero on 404)
+node scripts/cli.mjs search <query>             # fuzzy full-text search (JSON output)
+node scripts/cli.mjs list   [path]              # list vault files (JSON output)
+node scripts/cli.mjs tags                       # list all tags (JSON output)
 ```
 
 Write operations (used by obsidian-capture):
 
 ```
-obsidian write  <path> <content>    # create/overwrite a note
-obsidian write  <path> -f <file>    # create/overwrite from file
-obsidian append <path> <content>    # append to a note
-obsidian delete <path>              # delete a note
+node scripts/cli.mjs write  <path> <content>    # create/overwrite a note
+node scripts/cli.mjs write  <path> -f <file>    # create/overwrite from file
+node scripts/cli.mjs append <path> <content>    # append to a note
+node scripts/cli.mjs delete <path>              # delete a note
 ```
 
-**IMPORTANT: Never use heredocs or inline content in Bash for note writing.** Always use the Write tool to create `/tmp/<note>.md`, then a one-line Bash call: `obsidian write <path> -f /tmp/<note>.md`. This avoids security prompts from markdown headers in shell commands.
+**Writing notes:** Use the Write tool to create `/tmp/<note>.md`, then: `node scripts/cli.mjs write <vault-path> -f /tmp/<note>.md`
 
 ## Bootstrap
 
-`scripts/bootstrap <project-name> [repo-url]` — scaffolds the full project folder structure on first use. Idempotent — safe to run repeatedly.
+`node scripts/bootstrap.mjs <project-name> [repo-url]` — scaffolds the full project folder structure on first use. Idempotent — safe to run repeatedly. Outputs JSON: `{ project, created, skipped }`.
 
 ## Project Structure
 
@@ -70,7 +70,7 @@ vault/
 
 **Rules:**
 - All project notes go under the project folder. Never write to vault root for project content.
-- **First time with a project?** Search the vault (`obsidian search "<project>"`) to discover existing structure. Don't guess.
+- **First time with a project?** Search the vault (`node scripts/cli.mjs search "<project>"`) to discover existing structure. Don't guess.
 - The `{project}_metadata.md` anchors project identity. Read it to find the repo.
 - RFCs physically move between lifecycle folders as they progress.
 

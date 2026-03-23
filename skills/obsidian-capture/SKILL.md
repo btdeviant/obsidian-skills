@@ -98,7 +98,7 @@ plan: docs/plans/my-feature-plan.md
 2. **Atomic notes** — one idea per note (except session notes)
 3. **Link aggressively** — use `[[Note Title]]` wikilinks
 4. **Titles are concepts** — "Why We Chose X Over Y" not "2026-03-22 Notes"
-5. **Tags from existing set first** — check `obsidian tags` before inventing new ones
+5. **Tags from existing set first** — check `node scripts/cli.mjs tags` before inventing new ones
 6. **Project tag** — always include the project name
 7. **Backlink when updating** — if referencing an old note, append a backlink to it
 
@@ -111,9 +111,9 @@ Lowercase, hyphenated. Layer them:
 
 ## Workflow
 
-1. **Bootstrap first** — run `obsidian-read` skill's `scripts/bootstrap <project-name> [repo-url]` on first use. Idempotent.
-2. Search vault for related notes: `obsidian search "<terms>"`
+1. **Bootstrap first** — run `node scripts/bootstrap.mjs <project-name> [repo-url]` on first use. Idempotent.
+2. Search vault for related notes: `node scripts/cli.mjs search "<terms>"`
 3. Use the **Write tool** to create `/tmp/<descriptive-name>.md` with the note content
-4. Run `obsidian write <vault-path> -f /tmp/<descriptive-name>.md` via Bash (one-liner, no heredocs)
+4. Run `node scripts/cli.mjs write <vault-path> -f /tmp/<descriptive-name>.md` via Bash (one-liner, no heredocs)
 5. If linking to an existing note, append a backlink to it
 6. Mention what you captured (one line, not a production)

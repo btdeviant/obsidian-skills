@@ -11,15 +11,13 @@ Depends on `obsidian-read` for CLI and project structure.
 
 ## Scripts
 
-All gathering is done via scripts (one shell invocation per phase, not dozens):
+All gathering is done via Node.js scripts (one invocation per phase):
 
-- `scripts/vault-reader.sh <project>` — reads all vault notes for a project, outputs full content
-- `scripts/git-analyst.sh [days-back] [repo-path]` — recent commits, branches, additions, removals
-- `scripts/codebase-scanner.sh <claims-file> [repo-path]` — verifies claims extracted from vault notes
+- `node scripts/vault-reader.mjs <project>` — reads all vault notes, outputs JSON
+- `node scripts/git-analyst.mjs [days-back] [repo-path]` — recent commits, branches, additions, removals (JSON)
+- `node scripts/codebase-scanner.mjs <claims-file> [repo-path]` — verifies claims from vault notes (JSON)
 
-Scripts auto-locate the obsidian CLI by searching sibling directories. No env vars needed.
-
-**IMPORTANT: Every script invocation must be a single-line Bash command.** Do not set env vars on separate lines or construct multi-line commands — this triggers security prompts. One line per call.
+All scripts output structured JSON to stdout. Errors go to stderr as JSON with non-zero exit codes.
 
 ## Process
 
@@ -27,13 +25,13 @@ Scripts auto-locate the obsidian CLI by searching sibling directories. No env va
 
 **Phase A — run in parallel:**
 
-**Vault Reader** — Run `scripts/vault-reader.sh <project>`. Parse output. Extract from each note: path, tags, date, key claims (file paths, function names, components, branches, config vars). Write claims to `/tmp/vault-claims.txt` (format: `TYPE|NAME|SOURCE_NOTE` per line).
+**Vault Reader** — Run `node scripts/vault-reader.mjs <project>`. Parse output. Extract from each note: path, tags, date, key claims (file paths, function names, components, branches, config vars). Write claims to `/tmp/vault-claims.txt` (format: `TYPE|NAME|SOURCE_NOTE` per line).
 
-**Git Analyst** — Run `scripts/git-analyst.sh <days> <repo>`. Identify major removals, additions, architectural changes, unmerged branches.
+**Git Analyst** — Run `node scripts/git-analyst.mjs <days> <repo>`. Identify major removals, additions, architectural changes, unmerged branches.
 
 **Phase B — sequential (needs vault reader output):**
 
-**Codebase Scanner** — Run `scripts/codebase-scanner.sh /tmp/vault-claims.txt <repo>`. Verifies every claim against the codebase.
+**Codebase Scanner** — Run `node scripts/codebase-scanner.mjs /tmp/vault-claims.txt <repo>`. Verifies every claim against the codebase.
 
 ### 2. Synthesize
 
