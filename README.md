@@ -63,7 +63,6 @@ vault/
 |----------|----------|---------|-------------|
 | `OBSIDIAN_API_KEY` | **Yes** | — | API key from the Local REST API plugin |
 | `OBSIDIAN_BASE_URL` | No | `http://127.0.0.1:27123` | Override if using a non-default port |
-| `OBSIDIAN_CLI` | No | auto-detected | Path to the obsidian CLI script |
 
 ## CLAUDE.md Integration (Optional)
 
